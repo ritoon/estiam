@@ -9,19 +9,21 @@ import (
 	"github.com/ritoon/estiam/model"
 )
 
-var _ db.Storage = &Moke{}
+var _ db.StorageUser = &Moke{}
 
 type Moke struct {
 	listUser map[string]*model.User
 }
 
-func New() *Moke {
-	return &Moke{
-		listUser: make(map[string]*model.User),
+func New() *db.Storage {
+	return &db.Storage{
+		User: &Moke{
+			listUser: make(map[string]*model.User),
+		},
 	}
 }
 
-func (m *Moke) GetUserByID(id string) (*model.User, error) {
+func (m *Moke) GetByID(id string) (*model.User, error) {
 	u, ok := m.listUser[id]
 	if !ok {
 		return nil, errors.New("db user: not found")
@@ -29,7 +31,17 @@ func (m *Moke) GetUserByID(id string) (*model.User, error) {
 	return u, nil
 }
 
-func (m *Moke) DeleteUserByID(id string) error {
+func (m *Moke) GetByEmail(email string) (*model.User, error) {
+	for k := range m.listUser {
+		if m.listUser[k].Email == email {
+			return m.listUser[k], nil
+		}
+	}
+
+	return nil, errors.New("db user: not found")
+}
+
+func (m *Moke) DeleteByID(id string) error {
 	_, ok := m.listUser[id]
 	if !ok {
 		return errors.New("db user: not found")
@@ -38,13 +50,13 @@ func (m *Moke) DeleteUserByID(id string) error {
 	return nil
 }
 
-func (m *Moke) CreateUser(u *model.User) (*model.User, error) {
+func (m *Moke) Create(u *model.User) (*model.User, error) {
 	u.ID = uuid.New().String()
 	m.listUser[u.ID] = u
 	return u, nil
 }
 
-func (m *Moke) UpdateUser(id string, data map[string]interface{}) (*model.User, error) {
+func (m *Moke) Update(id string, data map[string]interface{}) (*model.User, error) {
 	u, ok := m.listUser[id]
 	if !ok {
 		return nil, errors.New("db user: not found")
@@ -58,7 +70,7 @@ func (m *Moke) UpdateUser(id string, data map[string]interface{}) (*model.User, 
 	return nil, nil
 }
 
-func (m *Moke) GetAllUser() ([]model.User, error) {
+func (m *Moke) GetAll() ([]model.User, error) {
 	us := make([]model.User, len(m.listUser))
 	var i int
 	for k := range m.listUser {

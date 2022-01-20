@@ -11,10 +11,10 @@ import (
 )
 
 type Service struct {
-	db db.Storage
+	db *db.Storage
 }
 
-func New(db db.Storage) *Service {
+func New(db *db.Storage) *Service {
 	return &Service{
 		db: db,
 	}
@@ -23,7 +23,7 @@ func New(db db.Storage) *Service {
 // go to Service folder.
 func (s *Service) GetUser(c *gin.Context) {
 	id := c.Param("id")
-	u, err := s.db.GetUserByID(id)
+	u, err := s.db.User.GetByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"id": id,
@@ -36,7 +36,7 @@ func (s *Service) GetUser(c *gin.Context) {
 }
 
 func (s *Service) GetAllUser(c *gin.Context) {
-	us, err := s.db.GetAllUser()
+	us, err := s.db.User.GetAll()
 	if err != nil {
 		log.Println("service:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -59,7 +59,7 @@ func (s *Service) CreateUser(c *gin.Context) {
 		return
 	}
 
-	_, err = s.db.CreateUser(&u)
+	_, err = s.db.User.Create(&u)
 	if err != nil {
 		log.Println("service:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -82,7 +82,7 @@ func (s *Service) DeleteUser(c *gin.Context) {
 		})
 		return
 	}
-	err := s.db.DeleteUserByID(id)
+	err := s.db.User.DeleteByID(id)
 	if err != nil {
 		log.Println("service:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -92,5 +92,29 @@ func (s *Service) DeleteUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, gin.H{
 		"delete": id,
+	})
+}
+
+func (s *Service) Login(c *gin.Context) {
+
+	var l model.LoginUser
+	err := c.BindJSON(&l)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": err,
+		})
+		return
+	}
+
+	u, err := s.db.User.GetByEmail(l.Email)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"email": u.Email,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"user": u,
 	})
 }
