@@ -12,7 +12,7 @@ func main() {
 	// TODO: implement all routes
 	//r.POST("/users",....)
 	//r.GET("/users",....)
-	//r.DELETE("/users",....)
+	//r.DELETE("/users/:id",....)
 
 	r.Run(":8081")
 }
