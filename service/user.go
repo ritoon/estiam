@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/dgkg/cmi/db"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -11,10 +12,14 @@ import (
 	"github.com/ritoon/estiam/model"
 )
 
+type Service struct {
+	db db.Storage
+}
+
 // go to Service folder.
-func HandlerGetUser(c *gin.Context) {
+func (s *Service) HandlerGetUser(c *gin.Context) {
 	id := c.Param("id")
-	u, ok := moke.ListUser[id]
+	u, ok := s.db.GetUserByID(id)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{
 			"id": id,
