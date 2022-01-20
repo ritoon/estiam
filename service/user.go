@@ -109,12 +109,19 @@ func (s *Service) Login(c *gin.Context) {
 	u, err := s.db.User.GetByEmail(l.Email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"email": u.Email,
+			"email": l.Email,
+		})
+		return
+	}
+
+	if u.Password != l.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "not authorized",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"user": u,
+		"jwt": "tokenHASDFHASDBHFJKASDHFSDF",
 	})
 }
