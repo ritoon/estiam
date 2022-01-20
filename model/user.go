@@ -36,5 +36,5 @@ func (p *Password) UnmarshalJSON(b []byte) error {
 }
 
 func (p Password) MarshalJSON() ([]byte, error) {
-	return nil, nil
+	return json.Marshal("")
 }
