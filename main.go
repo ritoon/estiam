@@ -2,16 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 
+	"github.com/ritoon/estiam/db"
 	"github.com/ritoon/estiam/db/moke"
+	"github.com/ritoon/estiam/db/sqlite"
 	"github.com/ritoon/estiam/service"
 	"github.com/ritoon/estiam/util"
 )
 
 type Config struct {
+	EnvType    string
 	ListenPort string
 	SecretKey  []byte
 }
@@ -26,13 +30,23 @@ func init() {
 	if err != nil {               // Handle errors reading the config file
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
+	config.EnvType = viper.GetString("EnvType")
 	config.SecretKey = []byte(viper.GetString("SecretKey"))
 	config.ListenPort = viper.GetString("ListenPort")
 }
 
 func main() {
 	r := gin.Default()
-	db := moke.New()
+	var db *db.Storage
+	log.Println("ENV:", config.EnvType)
+	if config.EnvType == "dev" {
+		log.Println("create Moke DB")
+		db = moke.New()
+	} else {
+		log.Println("create SQLite DB")
+		db = sqlite.New("storage.db")
+	}
+
 	secureJWT := util.MiddlJWT(config.SecretKey)
 	s := service.New(db, config.SecretKey)
 	r.GET("/users/:id", s.GetUser)
