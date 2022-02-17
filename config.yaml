@@ -1,3 +1,8 @@
-EnvType: preprod
+EnvType: prod
 SecretKey: toto
 ListenPort: 8081
+DB:
+  DBName: estiam-db
+  User: estiam-user
+  Pass: estiam-pwd
+  Port: 3306

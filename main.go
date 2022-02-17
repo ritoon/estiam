@@ -9,6 +9,7 @@ import (
 
 	"github.com/ritoon/estiam/db"
 	"github.com/ritoon/estiam/db/moke"
+	"github.com/ritoon/estiam/db/mysql"
 	"github.com/ritoon/estiam/db/sqlite"
 	"github.com/ritoon/estiam/service"
 	"github.com/ritoon/estiam/util"
@@ -18,6 +19,12 @@ type Config struct {
 	EnvType    string
 	ListenPort string
 	SecretKey  []byte
+	db         struct {
+		DBName string
+		User   string
+		Pass   string
+		Port   string
+	}
 }
 
 var config Config
@@ -33,6 +40,11 @@ func init() {
 	config.EnvType = viper.GetString("EnvType")
 	config.SecretKey = []byte(viper.GetString("SecretKey"))
 	config.ListenPort = viper.GetString("ListenPort")
+	// connect to DB
+	config.db.DBName = viper.GetString("db.DBName")
+	config.db.User = viper.GetString("db.User")
+	config.db.Pass = viper.GetString("db.Pass")
+	config.db.Port = viper.GetString("db.Port")
 }
 
 func main() {
@@ -42,6 +54,10 @@ func main() {
 	if config.EnvType == "dev" {
 		log.Println("create Moke DB")
 		db = moke.New()
+
+	} else if config.EnvType == "prod" {
+		log.Println("connect to an MySQL")
+		db = mysql.New(config.db.DBName, config.db.User, config.db.Pass, config.db.Port)
 	} else {
 		log.Println("create SQLite DB")
 		db = sqlite.New("storage.db")

@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: est-db
+    image: amd64/mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somepwd
+      MYSQL_DATABASE: estiam-db
+      MYSQL_USER: estiam-user
+      MYSQL_PASSWORD: estiam-pwd
+    ports:
+      - 3306:3306
