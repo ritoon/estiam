@@ -12,3 +12,9 @@ services:
       MYSQL_PASSWORD: estiam-pwd
     ports:
       - 3306:3306
+  cache:
+    image: redis:6.2
+    container_name: est-cache
+    restart: always
+    ports:
+      - 6379:6379

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 
+	"github.com/ritoon/estiam/cache"
 	"github.com/ritoon/estiam/db"
 	"github.com/ritoon/estiam/db/moke"
 	"github.com/ritoon/estiam/db/mysql"
@@ -64,10 +65,12 @@ func main() {
 	}
 
 	secureJWT := util.MiddlJWT(config.SecretKey)
-	s := service.New(db, config.SecretKey)
-	r.GET("/users/:id", s.GetUser)
+	c := cache.New()
+	cacheMdw := cache.MiddlCache(c)
+	s := service.New(db, c, config.SecretKey)
+	r.GET("/users/:id", cacheMdw, s.GetUser)
 	r.POST("/users", s.CreateUser)
-	r.GET("/users", s.GetAllUser)
+	r.GET("/users", cacheMdw, s.GetAllUser)
 	r.DELETE("/users/:id", secureJWT, s.DeleteUser)
 	r.POST("/login", s.Login)
 	r.Run(":" + config.ListenPort)

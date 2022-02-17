@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/ritoon/estiam/cache"
 	"github.com/ritoon/estiam/db"
 	"github.com/ritoon/estiam/model"
 	"github.com/ritoon/estiam/util"
@@ -14,12 +15,14 @@ import (
 type Service struct {
 	db      *db.Storage
 	signKey []byte
+	cache   *cache.Cache
 }
 
-func New(db *db.Storage, signKey []byte) *Service {
+func New(db *db.Storage, cache *cache.Cache, signKey []byte) *Service {
 	return &Service{
 		db:      db,
 		signKey: signKey,
+		cache:   cache,
 	}
 }
 
@@ -33,6 +36,16 @@ func (s *Service) GetUser(c *gin.Context) {
 		})
 		return
 	}
+
+	err = s.cache.Set(c.Request.URL.String(), u)
+	if err != nil {
+		log.Println("service:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "error internal",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"user": u,
 	})
@@ -47,6 +60,16 @@ func (s *Service) GetAllUser(c *gin.Context) {
 		})
 		return
 	}
+
+	err = s.cache.Set(c.Request.URL.String(), us)
+	if err != nil {
+		log.Println("service:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "error internal",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"users": us,
 	})
