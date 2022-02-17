@@ -62,6 +62,13 @@ func (s *Service) CreateUser(c *gin.Context) {
 		return
 	}
 
+	if u.Password == nil || len(*u.Password) == 0 || len(u.Email) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": "need email and password",
+		})
+		return
+	}
+
 	_, err = s.db.User.Create(&u)
 	if err != nil {
 		log.Println("service:", err)
@@ -109,6 +116,13 @@ func (s *Service) Login(c *gin.Context) {
 		return
 	}
 
+	if l.Password == nil || len(*l.Password) == 0 || len(l.Email) == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "not authorized",
+		})
+		return
+	}
+
 	u, err := s.db.User.GetByEmail(l.Email)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -116,8 +130,6 @@ func (s *Service) Login(c *gin.Context) {
 		})
 		return
 	}
-
-	log.Printf("receive %v - got %v", *l.Password, *u.Password)
 
 	if *u.Password != *l.Password {
 		c.JSON(http.StatusUnauthorized, gin.H{
