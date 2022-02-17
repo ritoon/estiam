@@ -10,7 +10,7 @@ import (
 func main() {
 	r := gin.Default()
 	db := moke.New()
-	s := service.New(db)
+	s := service.New(db, []byte("toto"))
 	r.GET("/users/:id", s.GetUser)
 	r.POST("/users", s.CreateUser)
 	r.GET("/users", s.GetAllUser)

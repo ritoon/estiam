@@ -8,15 +8,18 @@ import (
 
 	"github.com/ritoon/estiam/db"
 	"github.com/ritoon/estiam/model"
+	"github.com/ritoon/estiam/util"
 )
 
 type Service struct {
-	db *db.Storage
+	db      *db.Storage
+	signKey []byte
 }
 
-func New(db *db.Storage) *Service {
+func New(db *db.Storage, signKey []byte) *Service {
 	return &Service{
-		db: db,
+		db:      db,
+		signKey: signKey,
 	}
 }
 
@@ -114,14 +117,22 @@ func (s *Service) Login(c *gin.Context) {
 		return
 	}
 
-	if u.Password != l.Password {
+	log.Printf("receive %v - got %v", *l.Password, *u.Password)
+
+	if *u.Password != *l.Password {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "not authorized",
 		})
 		return
 	}
 
+	jwtVal, err := util.CreateJWT(s.signKey, u.ID, u.FirstName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"jwt": "tokenHASDFHASDBHFJKASDHFSDF",
+		"jwt": jwtVal,
 	})
 }

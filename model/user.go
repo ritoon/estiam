@@ -7,16 +7,16 @@ import (
 )
 
 type User struct {
-	ID        string   `json:"id"`
-	FirstName string   `json:"first_name"`
-	LastName  string   `json:"last_name"`
-	Email     string   `json:"email"`
-	Password  Password `json:"pass"`
+	ID        string    `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Password  *Password `json:"pass,omitempty"`
 }
 
 type LoginUser struct {
-	Email    string   `json:"email"`
-	Password Password `json:"pass"`
+	Email    string    `json:"email"`
+	Password *Password `json:"pass,omitempty"`
 }
 
 type Password string
@@ -36,5 +36,5 @@ func (p *Password) UnmarshalJSON(b []byte) error {
 }
 
 func (p Password) MarshalJSON() ([]byte, error) {
-	return nil, nil
+	return json.Marshal("")
 }

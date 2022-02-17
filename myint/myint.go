@@ -16,13 +16,13 @@ func (i MyInt) Add(in int) (MyInt, error) {
 }
 
 func (i MyInt) Sub(in int) MyInt {
-	return 0
+	return i - MyInt(in)
 }
 
 func (i MyInt) Divide(in int) MyInt {
-	return 0
+	return i / MyInt(in)
 }
 
 func (i MyInt) Multiply(in int) MyInt {
-	return 0
+	return i * MyInt(in)
 }
