@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"log"
@@ -43,6 +44,14 @@ func (c *Cache) Set(key string, value interface{}) error {
 	return nil
 }
 
+func (c *Cache) SetString(key string, value string) error {
+	_, err := c.cli.Do("SET", key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Cache) Get(key string) ([]byte, error) {
 	value, err := c.cli.Do("GET", key)
 	if err != nil {
@@ -69,5 +78,20 @@ func MiddlCache(c *Cache) func(ctx *gin.Context) {
 			return
 		}
 
+		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
+		ctx.Writer = blw
+		ctx.Next()
+		log.Println("set cache for next response")
+		c.SetString(ctx.Request.URL.String(), blw.body.String())
 	}
+}
+
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
 }

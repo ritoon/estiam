@@ -37,15 +37,6 @@ func (s *Service) GetUser(c *gin.Context) {
 		return
 	}
 
-	err = s.cache.Set(c.Request.URL.String(), u)
-	if err != nil {
-		log.Println("service:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "error internal",
-		})
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"user": u,
 	})
@@ -53,15 +44,6 @@ func (s *Service) GetUser(c *gin.Context) {
 
 func (s *Service) GetAllUser(c *gin.Context) {
 	us, err := s.db.User.GetAll()
-	if err != nil {
-		log.Println("service:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "error internal",
-		})
-		return
-	}
-
-	err = s.cache.Set(c.Request.URL.String(), us)
 	if err != nil {
 		log.Println("service:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
