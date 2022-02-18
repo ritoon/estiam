@@ -44,7 +44,15 @@ func (c *Cache) Set(key string, value interface{}) error {
 	return nil
 }
 
-func (c *Cache) SetString(key string, value string) error {
+func (c *Cache) SetString(key, value string) error {
+	_, err := c.cli.Do("SET", key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Cache) SetBytes(key string, value []byte) error {
 	_, err := c.cli.Do("SET", key, value)
 	if err != nil {
 		return err
@@ -68,7 +76,6 @@ func (c *Cache) Get(key string) ([]byte, error) {
 func MiddlCache(c *Cache) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		value, err := c.Get(ctx.Request.URL.String())
-		log.Println("MiddlCache", value, err)
 		if len(value) != 0 && err == nil {
 			log.Println("get from cache the response")
 			ctx.Writer.WriteHeader(http.StatusOK)
@@ -78,11 +85,11 @@ func MiddlCache(c *Cache) func(ctx *gin.Context) {
 			return
 		}
 
-		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
+		blw := &bodyLogWriter{body: bytes.NewBuffer([]byte{}), ResponseWriter: ctx.Writer}
 		ctx.Writer = blw
 		ctx.Next()
-		log.Println("set cache for next response")
-		c.SetString(ctx.Request.URL.String(), blw.body.String())
+		log.Println("set cache")
+		c.SetBytes(ctx.Request.URL.String(), blw.body.Bytes())
 	}
 }
 
